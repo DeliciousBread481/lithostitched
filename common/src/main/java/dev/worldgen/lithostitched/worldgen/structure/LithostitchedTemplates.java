@@ -19,15 +19,15 @@ public class LithostitchedTemplates implements Iterable<StructurePoolElement> {
         this.entries = Lists.newArrayList();
     }
 
-    public LithostitchedTemplates add(StructurePoolElement element, int weight) {
+    public synchronized LithostitchedTemplates add(StructurePoolElement element, int weight) {
         this.entries.add(new WeightedEntry(element, this.entries.size(), weight));
         return this;
     }
 
-    public List<StructurePoolElement> shuffle(RandomSource random) {
+    public synchronized List<StructurePoolElement> shuffle(RandomSource random) {
         List<WeightedEntry> shuffled = Lists.newArrayList(this.entries.stream().map(WeightedEntry::copy).toList());
         shuffled.forEach(entry -> entry.setRandom(random.nextFloat()));
-        shuffled.sort(Comparator.comparingDouble(WeightedEntry::getRandWeight));
+        shuffled.sort((a, b) -> Double.compare(a.getRandWeight(), b.getRandWeight()));
 
         return shuffled.stream().map(WeightedEntry::getElement).toList();
     }
