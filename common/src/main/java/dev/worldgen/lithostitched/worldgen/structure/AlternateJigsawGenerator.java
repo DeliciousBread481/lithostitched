@@ -144,6 +144,7 @@ public class AlternateJigsawGenerator {
         private final RandomSource random;
         private final Map<StructurePoolElement, Integer> groupCounts = new HashMap<>();
         final Deque<ShapedPoolStructurePiece> structurePieces = Queues.newArrayDeque();
+        private final List<String> templateHistory = new ArrayList<>();
 
         StructurePoolGenerator(boolean vanilla, Registry<StructureTemplatePool> registry, int maxSize, ChunkGenerator chunkGenerator, StructureTemplateManager structureTemplateManager, List<? super PoolElementStructurePiece> children, RandomSource random) {
             this.vanilla = vanilla;
@@ -199,6 +200,9 @@ public class AlternateJigsawGenerator {
             // No point grabbing the pool if it's the empty pool
             if (poolKey == Pools.EMPTY) return List.of();
 
+            System.out.println("[Lithostitched] Processing pool: " + poolKey.location() + ", depth: " + depth);
+            this.templateHistory.add(poolKey.location().toString());
+
             if (ConfigHandler.getConfig().breaksSeedParity() || !this.vanilla) {
                 // If we've already iterated over this pool, don't iterate over it again to prevent infinite looping
                 if (checkedPools.getValue().contains(poolKey)) {
@@ -209,6 +213,7 @@ public class AlternateJigsawGenerator {
                     stringBuilder.append(poolKey.location());
 
                     LithostitchedCommon.LOGGER.warn("Template pool fallback chain found: {}", stringBuilder);
+                    System.out.println("[Lithostitched] Template history: " + this.templateHistory);
                     return List.of();
                 }
 
@@ -222,6 +227,7 @@ public class AlternateJigsawGenerator {
                     pool = pool.value().getFallback();
                 }
 
+                System.out.println("[Lithostitched] Calling shuffle on pool: " + poolKey.location() + " with " + pool.value().size() + " elements");
                 return ((StructurePoolAccess)pool.value()).getLithostitchedTemplates().shuffle(random);
             }
 

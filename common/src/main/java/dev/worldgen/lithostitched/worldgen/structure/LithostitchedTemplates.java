@@ -24,12 +24,39 @@ public class LithostitchedTemplates implements Iterable<StructurePoolElement> {
         return this;
     }
 
-    public synchronized List<StructurePoolElement> shuffle(RandomSource random) {
-        List<WeightedEntry> shuffled = Lists.newArrayList(this.entries.stream().map(WeightedEntry::copy).toList());
-        shuffled.forEach(entry -> entry.setRandom(random.nextFloat()));
-        shuffled.sort((a, b) -> Double.compare(a.getRandWeight(), b.getRandWeight()));
-
-        return shuffled.stream().map(WeightedEntry::getElement).toList();
+    public List<StructurePoolElement> shuffle(RandomSource random) {
+        long startTime = System.currentTimeMillis();
+        int entryCount = this.entries.size();
+        
+        if (entryCount > 1000) {
+            System.err.println("[Lithostitched WARNING] Large template pool detected: " + entryCount + " entries");
+            Thread.dumpStack();
+        }
+        
+        System.out.println("[Lithostitched] shuffle() starting with " + entryCount + " entries");
+        
+        try {
+            List<WeightedEntry> shuffled = Lists.newArrayList(this.entries.stream().map(WeightedEntry::copy).toList());
+            shuffled.forEach(entry -> entry.setRandom(random.nextFloat()));
+            
+            System.out.println("[Lithostitched] Starting sort operation on " + shuffled.size() + " entries");
+            shuffled.sort(Comparator.comparingDouble(WeightedEntry::getRandWeight));
+            
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - startTime;
+            
+            System.out.println("[Lithostitched] Sort operation completed in " + duration + "ms");
+            
+            if (duration > 5000) {
+                System.err.println("[Lithostitched WARNING] Sort took " + duration + "ms for " + entryCount + " entries");
+                Thread.dumpStack();
+            }
+            
+            return shuffled.stream().map(WeightedEntry::getElement).toList();
+        } finally {
+            long finalTime = System.currentTimeMillis();
+            System.out.println("[Lithostitched] shuffle() took " + (finalTime - startTime) + "ms total");
+        }
     }
 
     public Stream<StructurePoolElement> stream() {

@@ -46,6 +46,10 @@ public class AlternateJigsawStructure extends Structure {
         ChunkPos chunkPos = context.chunkPos();
         int i = this.config.startHeight().sample(context.random(), new WorldGenerationContext(context.chunkGenerator(), context.heightAccessor()));
         BlockPos blockPos = new BlockPos(chunkPos.getMinBlockX(), i, chunkPos.getMinBlockZ());
+
+        System.out.println("[Lithostitched] Structure generation starting at chunk: " + chunkPos);
+        System.out.println("[Lithostitched] Structure config: startPool=" + this.config.startPool().unwrapKey().map(k -> k.location().toString()).orElse("unknown") + ", size=" + this.config.size());
+
         return AlternateJigsawGenerator.generate(context, this.config, false, this.config.size().sample(context.random()), blockPos);
     }
 
